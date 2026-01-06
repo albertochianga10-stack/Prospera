@@ -1,5 +1,6 @@
 {
   "name": "Prospera - Independência Financeira",
   "description": "Um aplicativo inteligente e profissional para jovens em Angola focado em gestão financeira, educação contínua e produtividade pessoal.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "isPWA": true
 }

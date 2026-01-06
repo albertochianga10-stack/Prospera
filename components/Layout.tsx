@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +8,43 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) => {
+  const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setPermissionStatus(Notification.permission);
+    }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) {
+      alert("Este navegador não suporta notificações de desktop.");
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      setPermissionStatus(permission);
+      
+      if (permission === 'granted') {
+        new Notification("Prospera", {
+          body: "As notificações foram ativadas com sucesso! Vamos te ajudar a manter o foco.",
+          icon: "https://picsum.photos/192/192"
+        });
+      } else if (permission === 'denied') {
+        alert("As notificações foram bloqueadas. Você pode ativá-las nas configurações do seu navegador.");
+      }
+    } catch (error) {
+      console.error("Erro ao pedir permissão de notificação:", error);
+    }
+  };
+
+  const getBellColor = () => {
+    if (permissionStatus === 'granted') return 'text-indigo-600 bg-indigo-50';
+    if (permissionStatus === 'denied') return 'text-rose-600 bg-rose-50';
+    return 'text-slate-600 bg-slate-100';
+  };
+
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-white shadow-2xl overflow-hidden relative">
       {/* Header */}
@@ -16,7 +53,11 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab }) =>
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl">P</div>
           <h1 className="font-bold text-xl tracking-tight text-slate-800">Prospera</h1>
         </div>
-        <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+        <button 
+          onClick={requestNotificationPermission}
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors active:scale-90 ${getBellColor()}`}
+          title="Ativar Notificações"
+        >
           <i className="fas fa-bell"></i>
         </button>
       </header>
